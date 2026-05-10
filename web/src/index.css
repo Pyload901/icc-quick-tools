@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+/* ===== CTF Command Center Design System ===== */
+
+@theme {
+  /* Cyberpunk dark palette */
+  --color-bg-primary: #0a0e17;
+  --color-bg-secondary: #111827;
+  --color-bg-card: #1a1f2e;
+  --color-bg-card-hover: #222838;
+  --color-bg-input: #151b2b;
+  --color-border: #2a3142;
+  --color-border-focus: #6366f1;
+
+  /* Accent colors */
+  --color-accent: #6366f1;
+  --color-accent-hover: #818cf8;
+  --color-accent-glow: rgba(99, 102, 241, 0.3);
+  --color-cyber-green: #22d3ee;
+  --color-cyber-pink: #f472b6;
+  --color-cyber-yellow: #fbbf24;
+  --color-cyber-red: #ef4444;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #ef4444;
+
+  /* Text */
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  /* Fonts */
+  --font-sans: 'Inter', 'system-ui', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ===== Base ===== */
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-primary font-sans antialiased;
+    background-image:
+      radial-gradient(ellipse at 10% 20%, rgba(99, 102, 241, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 80%, rgba(34, 211, 238, 0.03) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+}
+
+/* ===== Glassmorphism Card ===== */
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.8), rgba(17, 24, 39, 0.6));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 20px var(--color-accent-glow);
+}
+
+/* ===== Glow Button ===== */
+
+.btn-glow {
+  @apply px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300;
+  background: linear-gradient(135deg, var(--color-accent), #4f46e5);
+  color: white;
+  box-shadow: 0 0 0 0 var(--color-accent-glow);
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 20px var(--color-accent-glow);
+  transform: translateY(-1px);
+}
+
+.btn-glow:active {
+  transform: translateY(0);
+}
+
+/* ===== Sidebar ===== */
+
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary transition-all duration-200;
+}
+
+.sidebar-link:hover {
+  @apply text-text-primary;
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.sidebar-link.active {
+  @apply text-accent font-medium;
+  background: rgba(99, 102, 241, 0.15);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* ===== Pulse animation ===== */
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--color-accent-glow); }
+  50% { box-shadow: 0 0 20px var(--color-accent-glow); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ===== Status indicators ===== */
+
+.status-dot {
+  @apply w-2.5 h-2.5 rounded-full;
+}
+
+.status-dot.online {
+  @apply bg-success;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+}
+
+.status-dot.offline {
+  @apply bg-danger;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+/* ===== Input styles ===== */
+
+.input-dark {
+  @apply w-full px-3 py-2 rounded-lg text-sm text-text-primary placeholder-text-muted outline-none transition-all duration-200;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+}
+
+.input-dark:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+/* ===== Table styles ===== */
+
+.table-dark {
+  @apply w-full text-sm;
+}
+
+.table-dark th {
+  @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-text-muted;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table-dark td {
+  @apply px-4 py-3;
+  border-bottom: 1px solid rgba(42, 49, 66, 0.5);
+}
+
+.table-dark tr:hover td {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+/* ===== Modal overlay ===== */
+
+.modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+/* ===== Skeleton loader ===== */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-bg-card) 25%, var(--color-bg-card-hover) 50%, var(--color-bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}

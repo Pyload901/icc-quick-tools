@@ -1,0 +1,27 @@
+services:
+  api:
+    build: ./api
+    container_name: ctf-api
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "8000:8000"
+    networks:
+      - ctf-net
+
+  web:
+    build: ./web
+    container_name: ctf-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - ctf-net
+
+networks:
+  ctf-net:
+    driver: bridge
