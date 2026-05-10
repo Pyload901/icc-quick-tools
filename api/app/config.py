@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # Flag Submission
     flag_submit_url: str = "http://10.10.0.1:8080/flags"
 
+    # Scoreboard — overridable via SCOREBOARD_URL env var
+    scoreboard_url: str = "http://10.10.0.1"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Server, Flag, Wrench, Crosshair, Activity, Zap } from 'lucide-react';
+import { Server, Flag, Wrench, Crosshair, Activity, Zap, Trophy, ExternalLink } from 'lucide-react';
 import api from '../api/client';
 import StatCard from '../components/StatCard';
 import StatusBadge from '../components/StatusBadge';
@@ -11,16 +11,20 @@ import StatusBadge from '../components/StatusBadge';
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [config, setConfig] = useState(null);
+  const [scoreboardUrl, setScoreboardUrl] = useState('http://10.10.0.1');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [configRes, flagStatsRes, toolsRes, vulnboxesRes] = await Promise.allSettled([
+        const [configRes, flagStatsRes, toolsRes, vulnboxesRes, urlsRes] = await Promise.allSettled([
           api.get('/config'),
           api.get('/flagids/stats'),
           api.get('/tools'),
           api.get('/vulnboxes'),
+          api.get('/config/urls'),
         ]);
+
+        if (urlsRes.status === 'fulfilled') setScoreboardUrl(urlsRes.value.data.scoreboard_url);
 
         if (configRes.status === 'fulfilled') setConfig(configRes.value.data);
 
@@ -98,7 +102,7 @@ export default function Dashboard() {
       <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
         <Zap className="w-5 h-5 text-warning" /> Quick Access
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {quickLinks.map(({ to, icon: Icon, label, desc, color }) => (
           <Link key={to} to={to} className="glass-card p-5 group cursor-pointer block">
             <Icon className={`w-8 h-8 ${color} mb-3 group-hover:scale-110 transition-transform`} />
@@ -106,6 +110,23 @@ export default function Dashboard() {
             <p className="text-xs text-text-muted mt-1">{desc}</p>
           </Link>
         ))}
+
+        {/* Scoreboard — external link */}
+        <a
+          id="scoreboard-quick-link"
+          href={scoreboardUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="glass-card p-5 group cursor-pointer block"
+          style={{ borderColor: 'rgba(251,191,36,0.4)', background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(17,24,39,0.6))' }}
+        >
+          <div className="relative">
+            <Trophy className="w-8 h-8 text-warning mb-3 group-hover:scale-110 transition-transform" />
+            <ExternalLink className="w-3 h-3 text-text-muted absolute -top-0.5 right-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <h3 className="text-sm font-semibold text-text-primary">Scoreboard</h3>
+          <p className="text-xs text-text-muted mt-1 truncate" title={scoreboardUrl}>{scoreboardUrl}</p>
+        </a>
       </div>
     </div>
   );

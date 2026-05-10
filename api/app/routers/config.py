@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.crud import config_crud
 from app.database import get_session
 from app.schemas.config_schemas import (
@@ -74,3 +75,17 @@ async def update_config(
         total_teams=config.total_teams,
         updated_at=config.updated_at,
     )
+
+
+@router.get("/urls")
+async def get_game_urls() -> dict:
+    """
+    Return public game URLs configured via environment variables.
+    These are non-secret infrastructure URLs (scoreboard, APIs).
+    """
+    return {
+        "scoreboard_url": settings.scoreboard_url,
+        "flag_id_api_url": settings.flag_id_api_url,
+        "flag_submit_url": settings.flag_submit_url,
+        "game_info_url": settings.game_info_api_url,
+    }
