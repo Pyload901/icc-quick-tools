@@ -9,6 +9,8 @@ export function useVulnboxes() {
   const [vulnboxes, setVulnboxes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [discovering, setDiscovering] = useState({});
+  const [scanningRepos, setScanningRepos] = useState({});
+  const [reposByVulnbox, setReposByVulnbox] = useState({});
 
   const fetchVulnboxes = useCallback(async () => {
     try {
@@ -69,6 +71,21 @@ export function useVulnboxes() {
     }
   }, []);
 
+  const scanRepos = useCallback(async (vulnboxId) => {
+    try {
+      setScanningRepos((prev) => ({ ...prev, [vulnboxId]: true }));
+      const { data } = await api.get(`/vulnboxes/${vulnboxId}/repos`);
+      setReposByVulnbox((prev) => ({ ...prev, [vulnboxId]: data }));
+      toast.success(`Found ${data.length} repo(s) on vulnbox ${vulnboxId}`);
+      return data;
+    } catch (err) {
+      console.error(`Repo scan failed for vulnbox ${vulnboxId}:`, err);
+      throw err;
+    } finally {
+      setScanningRepos((prev) => ({ ...prev, [vulnboxId]: false }));
+    }
+  }, []);
+
   useEffect(() => {
     fetchVulnboxes();
   }, [fetchVulnboxes]);
@@ -77,10 +94,13 @@ export function useVulnboxes() {
     vulnboxes,
     loading,
     discovering,
+    scanningRepos,
+    reposByVulnbox,
     fetchVulnboxes,
     discoverServices,
     addManualService,
     deleteService,
     downloadArtifacts,
+    scanRepos,
   };
 }

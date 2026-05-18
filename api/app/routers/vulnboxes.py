@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud import config_crud, service_crud
 from app.database import get_session
 from app.schemas.service_schemas import (
+    RepoInfo,
     ServiceCreate,
     ServiceResponse,
     VulnboxInfo,
@@ -112,6 +113,38 @@ async def delete_service(
     deleted = await service_crud.delete_service(session, service_id)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Service with id {service_id} not found")
+
+
+@router.get("/{vulnbox_id}/repos", response_model=list[RepoInfo])
+async def scan_repos(
+    vulnbox_id: int,
+    session: AsyncSession = Depends(get_session),
+) -> list[RepoInfo]:
+    """
+    SSH into a vulnbox and list directories under /root as potential git repos.
+    Returns a git-clone-over-SSH command for each directory found.
+
+    SAFETY: Connection restricted to 10.6x.<TEAM_ID>.1 only.
+    """
+    if vulnbox_id < 0 or vulnbox_id > 9:
+        raise HTTPException(status_code=400, detail="vulnbox_id must be between 0 and 9")
+
+    config = await config_crud.get_config(session)
+    if not config.ssh_password:
+        raise HTTPException(status_code=400, detail="SSH password not configured. Update it in Settings.")
+
+    try:
+        repos = await ssh_service.scan_root_repos(
+            vulnbox_id=vulnbox_id,
+            team_id=config.team_id,
+            ssh_password=config.ssh_password,
+        )
+    except ConnectionError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+    return [RepoInfo(**r) for r in repos]
 
 
 @router.get("/{vulnbox_id}/artifacts")

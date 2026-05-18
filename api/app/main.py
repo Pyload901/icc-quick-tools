@@ -3,13 +3,14 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.database import init_db
-from app.routers import config, flag_ids, targets, tools, vulnboxes
+from app.dependencies.auth import require_auth
+from app.routers import auth, config, flag_ids, targets, tools, vulnboxes
 
 # Configure logging
 logging.basicConfig(
@@ -78,11 +79,16 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
 
 # --- Include Routers ---
 
-app.include_router(config.router, prefix="/api")
-app.include_router(tools.router, prefix="/api")
-app.include_router(targets.router, prefix="/api")
-app.include_router(vulnboxes.router, prefix="/api")
-app.include_router(flag_ids.router, prefix="/api")
+# Auth routes are always public (no token required)
+app.include_router(auth.router, prefix="/api")
+
+# All other routes require a valid JWT session token
+_protected = {"dependencies": [Depends(require_auth)]}
+app.include_router(config.router, prefix="/api", **_protected)
+app.include_router(tools.router, prefix="/api", **_protected)
+app.include_router(targets.router, prefix="/api", **_protected)
+app.include_router(vulnboxes.router, prefix="/api", **_protected)
+app.include_router(flag_ids.router, prefix="/api", **_protected)
 
 
 @app.get("/api/health")

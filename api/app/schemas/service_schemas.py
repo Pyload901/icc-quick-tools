@@ -38,3 +38,11 @@ class ServiceDiscoveryRequest(BaseModel):
     """Request to trigger service discovery on a specific vulnbox."""
 
     vulnbox_id: int
+
+
+class RepoInfo(BaseModel):
+    """A discovered git repository (directory) found under /root on a vulnbox."""
+
+    dir_name: str
+    remote_path: str
+    git_clone_cmd: str

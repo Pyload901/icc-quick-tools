@@ -158,3 +158,69 @@ async def _recursive_download(sftp, remote_dir: str, local_prefix: str, zf: zipf
                     zf.writestr(archive_path, data)
         except Exception as e:
             logger.warning(f"Skipping {remote_path}: {e}")
+
+
+async def scan_root_repos(
+    vulnbox_id: int,
+    team_id: int,
+    ssh_password: str,
+) -> list[dict[str, str]]:
+    """
+    SSH into the vulnbox and list directories under /root.
+    Each subdirectory is treated as a potential git repository (service source).
+
+    Returns a list of dicts with:
+      - dir_name: bare directory name (e.g. "web_service")
+      - remote_path: full remote path (e.g. "/root/web_service")
+      - git_clone_cmd: ready-to-run SSH git clone command
+
+    SAFETY: Only connects to 10.6x.<team_id>.1 — validated before connection.
+    """
+    ip = generate_vulnbox_ip(vulnbox_id, team_id)
+
+    # CRITICAL: Validate IP belongs to our team
+    if not validate_team_ip(ip, team_id):
+        raise ValueError(f"Security violation: IP {ip} does not belong to team {team_id}")
+
+    logger.info(f"Scanning /root repos on vulnbox {vulnbox_id} at {ip}")
+
+    try:
+        async with asyncssh.connect(
+            ip,
+            username="root",
+            password=ssh_password,
+            known_hosts=None,
+            connect_timeout=10,
+        ) as conn:
+            # List only directories inside /root, one per line
+            result = await conn.run(
+                "ls -1d /root/*/  2>/dev/null | xargs -I{} basename {}",
+                timeout=10,
+            )
+            raw = result.stdout or ""
+            return _parse_root_dirs(raw, ip)
+    except asyncssh.Error as e:
+        logger.error(f"SSH connection failed scanning repos on vulnbox {vulnbox_id}: {e}")
+        raise ConnectionError(f"SSH connection to {ip} failed: {str(e)}")
+    except Exception as e:
+        logger.error(f"Repo scan failed for vulnbox {vulnbox_id}: {e}")
+        raise
+
+
+def _parse_root_dirs(output: str, ip: str) -> list[dict[str, str]]:
+    """Parse ls output into repo entries with git clone commands."""
+    repos = []
+    for line in output.strip().splitlines():
+        name = line.strip()
+        # Skip hidden dirs and common system dirs
+        if not name or name.startswith(".") or name in ("proc", "sys", "dev", "run"):
+            continue
+        remote_path = f"/root/{name}"
+        git_clone_cmd = f"git clone ssh://root@{ip}{remote_path}"
+        repos.append({
+            "dir_name": name,
+            "remote_path": remote_path,
+            "git_clone_cmd": git_clone_cmd,
+        })
+    return repos
+

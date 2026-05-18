@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # Scoreboard — overridable via SCOREBOARD_URL env var
     scoreboard_url: str = "http://10.10.0.1"
 
+    # Auth — override JWT_SECRET in .env for production
+    jwt_secret: str = "ctf-command-center-change-me-in-production"
+    jwt_expire_hours: int = 12
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

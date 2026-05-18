@@ -44,8 +44,8 @@ async def get_config_full(session: AsyncSession = Depends(get_session)) -> GameC
     return GameConfigFullResponse(
         id=config.id,
         team_id=config.team_id,
-        team_token=config.team_token,
-        ssh_password=config.ssh_password,
+        team_token="",
+        ssh_password="",
         game_tick_seconds=config.game_tick_seconds,
         total_teams=config.total_teams,
         updated_at=config.updated_at,

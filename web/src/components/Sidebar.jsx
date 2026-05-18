@@ -10,6 +10,7 @@ import {
   Wrench,
   Settings,
   Shield,
+  LogOut,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,7 +22,7 @@ const navItems = [
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onLogout }) {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 flex flex-col border-r border-border bg-bg-secondary/80 backdrop-blur-xl z-40">
       {/* Logo */}
@@ -53,8 +54,15 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-border">
+      <div className="px-4 py-3 border-t border-border space-y-2">
         <p className="text-[10px] text-text-muted text-center">A/D CTF Panel v1.0</p>
+        <button
+          id="sidebar-logout-btn"
+          onClick={onLogout}
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] text-text-muted hover:text-danger hover:bg-danger/10 border border-transparent hover:border-danger/20 transition-all"
+        >
+          <LogOut className="w-3.5 h-3.5" /> Lock Panel
+        </button>
       </div>
     </aside>
   );

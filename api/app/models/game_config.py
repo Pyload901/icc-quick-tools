@@ -17,6 +17,10 @@ class GameConfig(SQLModel, table=True):
     ssh_password: str = Field(default="", description="Root SSH password for all vulnboxes")
     game_tick_seconds: int = Field(default=120, description="Duration of each game tick in seconds")
     total_teams: int = Field(default=30, description="Total number of teams in competition")
+    access_code_hash: Optional[str] = Field(
+        default=None,
+        description="Bcrypt hash of the panel access code — None means onboarding not complete",
+    )
     updated_at: Optional[datetime] = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         description="Last update timestamp",
